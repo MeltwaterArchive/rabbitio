@@ -19,6 +19,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/meltwater/rabbitio/rmq"
 )
 
 // FileInput is nice
@@ -72,7 +74,7 @@ func writeFile(b []byte, dir, file string) {
 }
 
 // Send delivers messages to the channel
-func (f *FileInput) Send(messages chan Message) {
+func (f *FileInput) Send(messages chan rmq.Message) {
 	var num int
 
 	// loop over the queued up files

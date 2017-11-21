@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package rmq
 
 import (
 	"log"
@@ -42,6 +42,11 @@ type Message struct {
 	Headers    map[string]interface{}
 }
 
+// Override will be used to override RabbitMQ settings on publishing messages
+type Override struct {
+	RoutingKey string
+}
+
 // NewMessageFromAttrs will create a new message from a byte slice and attributes
 func NewMessageFromAttrs(bytes []byte, attrs map[string]string) *Message {
 
@@ -52,11 +57,6 @@ func NewMessageFromAttrs(bytes []byte, attrs map[string]string) *Message {
 		switch k {
 		// use the provided routing key to override tarball configuration
 		case "amqp.routingKey":
-			if routingKey != "" {
-				key = routingKey
-			} else {
-				key = v
-			}
 		default:
 			headers[k] = v
 		}
@@ -146,21 +146,26 @@ func NewRabbitMQ(amqpURI, exchange, queue, routingKey, tag string, prefetch int,
 }
 
 // Publish Takes stream of messages and publish them to rabbit
-func (r *RabbitMQ) Publish(in chan Message) {
-	for doc := range in {
+func (r *RabbitMQ) Publish(messages chan Message, o Override) {
+	for m := range messages {
 
-		// var table amqp.Table = doc.Headers
+		var routingKey string
+		if o.RoutingKey != "" {
+			routingKey = o.RoutingKey
+		} else {
+			routingKey = m.RoutingKey
+		}
 
 		if err := r.channel.Publish(
 			r.exchange,
-			doc.RoutingKey,
+			routingKey,
 			false, // mandatory
 			false, // immediate
 			amqp.Publishing{
-				Headers:         doc.Headers,
+				Headers:         m.Headers,
 				ContentType:     r.contentType,
 				ContentEncoding: r.contentEncoding,
-				Body:            doc.Body,
+				Body:            m.Body,
 				DeliveryMode:    amqp.Persistent,
 			},
 		); err != nil {
