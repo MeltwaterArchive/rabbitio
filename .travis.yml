@@ -1,0 +1,13 @@
+language: go
+sudo: false
+go:
+- 1.x
+
+deploy:
+  provider: releases
+  api_key:
+    secure: hU8WTgBre9Nm6yuDTXbLXdufUCxix2BVD0hNRxRtu+SNX3xXi2Zt/0+JVWBef7HOMgLaJLcnLaOUdr5IMGASvdPzhUVYPtYEsYFwSF7n9MW3pho3vCP26U5FRZMFtsuuapJ/CqVlakN3Nq7Q1I7BTLbjhbhHmYMRWXiXP2HetTN3zt49Lv6MYkpAz2jC7SMk3O8I08RDyVwElOZdXzzN/V1BIVJqTw0KbcRxJfDXmHBmeeKl+fKKQXVyUGoTfAoZ8cRBY2Jo7jRsP3L/WEB3LJ25BjOuiMuSqQwPiAIJAUddlIpjcBKeOHz3knqiqAelRq25Xdetqut24EirhSx3gNesoRfDaTJ6b7q6V1dekSyaLuXFS6X/0t982sqOTQTX8Tiw2rTlUxaHX1say77+GV1qkVg4KRbPd3poNYdjVlwX6ks4upjohYgVTZYsTm42Hj0RQEDzud/dXrACAEWm20Zcga8OtXXJTGuL/9pmoKc1U4NEOD6GWJsTJoS57gVv2xXT74YyKUaHxOavxsrrecD8B3e6PshP8QWFg6klDsUeoR5SsJ/BENfMtXLVeY3vXJWB7rpbb00fyS1OAqj826lNxyBZjByv8u8Sy8WGO5DUzWmpAjT2PNUQdMjuB/U+oY/GmbtoTUMPbt3YNalk1U9st5/KYY5Xl/KogzHgmdo=
+  file: build/*
+  file_glob: true
+  on:
+    tags: true
