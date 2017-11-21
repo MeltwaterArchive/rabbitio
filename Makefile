@@ -1,8 +1,9 @@
 VERSION := $(shell git describe --tags)
 BUILD_DIR?=$(shell pwd)/build
 NAME=rio
+DIRECTORIES=./ ./cmd ./rmq ./file
 
-all: tools deps build-all compress
+all: tools deps test build-all
 
 tools:
 	go get -u github.com/golang/dep/cmd/dep
@@ -12,8 +13,8 @@ deps:
 	 dep ensure
 
 test:
-	go vet ./cmd ./rmq ./file
-	go test -v ./cmd ./rmq ./file
+	go vet ${DIRECTORIES}
+	go test -v ${DIRECTORIES}
 
 build:
 	go build -o ${NAME} -ldflags "-X main.version=${VERSION}" main.go
@@ -26,7 +27,7 @@ build-all:
 	  -output="${BUILD_DIR}/${NAME}-${VERSION}-{{.OS}}-{{.Arch}}"
 
 compress:
-	gzip -v ${BUILD_DIR}/*
+	gzip -f -v ${BUILD_DIR}/*
 
 clean:
 	rm -rf ./build
