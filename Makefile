@@ -11,6 +11,10 @@ tools:
 deps:
 	 dep ensure
 
+test:
+	go vet ./cmd ./rmq ./file
+	go test -v ./cmd ./rmq ./file
+
 build:
 	go build -o ${NAME} -ldflags "-X main.version=${VERSION}" main.go
 
