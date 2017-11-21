@@ -24,13 +24,16 @@ type Message struct {
 // NewMessageFromAttrs will create a new message from a byte slice and attributes
 func NewMessageFromAttrs(bytes []byte, attrs map[string]string) *Message {
 
-	// add header information to the Message
+	// add amqp header information to the Message
 	var headers = make(map[string]interface{})
 	var key string
+
+	// need to support more than just string here for v
 	for k, v := range attrs {
 		switch k {
-		// use the provided routing key to override tarball configuration
+		// use the routing key from tarball header configuration
 		case "amqp.routingKey":
+			key = v
 		default:
 			headers[k] = v
 		}

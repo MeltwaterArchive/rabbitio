@@ -22,9 +22,9 @@ import (
 )
 
 var (
-	version                                   string
-	uri, exchange, userQueue, tag, routingKey string
-	prefetch                                  int
+	version                               string
+	uri, exchange, queue, tag, routingKey string
+	prefetch                              int
 )
 
 // RootCmd represents the base command when called without any subcommands
@@ -49,8 +49,8 @@ func Execute(ver string) {
 func init() {
 	RootCmd.PersistentFlags().StringVarP(&uri, "uri", "u", "amqp://guest:guest@localhost:5672/", "AMQP URI, uri to for instance RabbitMQ")
 	RootCmd.PersistentFlags().StringVarP(&exchange, "exchange", "e", "", "Exchange to connect to")
-	RootCmd.PersistentFlags().StringVarP(&userQueue, "queue", "q", "", "Queue to connect to")
-	RootCmd.PersistentFlags().StringVarP(&routingKey, "routingkey", "r", "", "Routing Key, if specified will override tarball routing key configuration")
+	RootCmd.PersistentFlags().StringVarP(&queue, "queue", "q", "", "Queue to connect to")
+	RootCmd.PersistentFlags().StringVarP(&routingKey, "routingkey", "r", "#", "Routing Key, if specified will override tarball routing key configuration")
 	RootCmd.PersistentFlags().StringVarP(&tag, "tag", "t", "Rabbit IO Connector "+version, "AMQP Client Tag")
 	RootCmd.PersistentFlags().IntVarP(&prefetch, "prefetch", "p", 100, "Prefetch for batches")
 }

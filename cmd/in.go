@@ -33,7 +33,7 @@ var inCmd = &cobra.Command{
 		channel := make(chan rmq.Message, prefetch)
 
 		override := rmq.Override{RoutingKey: routingKey}
-		rabbit := rmq.NewRabbitMQ(uri, exchange, userQueue, routingKey, tag, prefetch, false, true)
+		rabbit := rmq.NewPublisher(uri, exchange, queue, tag, prefetch)
 		path := NewFileInput(fileInput)
 
 		go path.Send(channel)

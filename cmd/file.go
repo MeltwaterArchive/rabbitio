@@ -102,6 +102,13 @@ func (f *FileInput) Send(messages chan rmq.Message) {
 
 // NewFileOutput creates a Path to output files in from RabbitMQ
 func NewFileOutput(path string, batchSize int) *Path {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		log.Println("Creating missing directory:", path)
+		err := os.MkdirAll(path, os.ModePerm)
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
 	return &Path{
 		name:      path,
 		batchSize: batchSize,

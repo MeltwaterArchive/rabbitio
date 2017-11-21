@@ -39,7 +39,7 @@ var outCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		channel := make(chan rmq.Message, prefetch*2)
 
-		rabbit := rmq.NewRabbitMQ(uri, exchange, userQueue, routingKey, tag, prefetch, true, false)
+		rabbit := rmq.NewConsumer(uri, exchange, queue, routingKey, tag, prefetch)
 		savePath := NewFileOutput(outputDirectory, batchSize)
 
 		go rabbit.Consume(channel)
