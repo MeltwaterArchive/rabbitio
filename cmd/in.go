@@ -15,6 +15,8 @@
 package cmd
 
 import (
+	"github.com/meltwater/rabbitio/file"
+	"github.com/meltwater/rabbitio/rmq"
 	"github.com/spf13/cobra"
 )
 
@@ -29,14 +31,15 @@ var inCmd = &cobra.Command{
 	Long:  `Specify a directory or file and tarballs will be published.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		channel := make(chan Message, prefetch)
+		channel := make(chan rmq.Message, prefetch)
 
-		rabbit := NewRabbitMQ(uri, exchange, userQueue, routingKey, tag, prefetch, false, true)
-		path := NewFileInput(fileInput)
+		override := rmq.Override{RoutingKey: routingKey}
+		rabbit := rmq.NewPublisher(uri, exchange, queue, tag, prefetch)
+		path := file.NewInput(fileInput)
 
 		go path.Send(channel)
 
-		rabbit.Publish(channel)
+		rabbit.Publish(channel, override)
 	},
 }
 

@@ -20,6 +20,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/meltwater/rabbitio/file"
+	"github.com/meltwater/rabbitio/rmq"
 	"github.com/spf13/cobra"
 )
 
@@ -36,10 +38,10 @@ var outCmd = &cobra.Command{
 	When there are no more messages in the queue, press CTRL + c, to interrupt
 	the consumption and save the last message buffers.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		channel := make(chan Message, prefetch*2)
+		channel := make(chan rmq.Message, prefetch*2)
 
-		rabbit := NewRabbitMQ(uri, exchange, userQueue, routingKey, tag, prefetch, true, false)
-		savePath := NewFileOutput(outputDirectory, batchSize)
+		rabbit := rmq.NewConsumer(uri, exchange, queue, routingKey, tag, prefetch)
+		path := file.NewOutput(outputDirectory, batchSize)
 
 		go rabbit.Consume(channel)
 
@@ -51,7 +53,7 @@ var outCmd = &cobra.Command{
 			close(channel)
 		}()
 
-		savePath.Receive(channel)
+		path.Receive(channel)
 	},
 }
 

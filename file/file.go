@@ -12,34 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package file
 
 import (
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/meltwater/rabbitio/rmq"
 )
 
-// FileInput is nice
-type FileInput struct {
-	queue []string
-}
-
-// Path is directory path for consumed RabbitMQ messages
+// Path is a directory file path
 type Path struct {
 	name      string
 	batchSize int
+	queue     []string
 }
 
-// NewFileInput creates a FileInput from the specified directory
-func NewFileInput(path string) *FileInput {
+// NewInput returns a *Path with a queue of files paths, all files in a directory
+func NewInput(path string) *Path {
 	fi, err := os.Stat(path)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	var f *FileInput
+	var f *Path
 	q := []string{}
 	switch mode := fi.Mode(); {
 	case mode.IsDir():
@@ -55,7 +53,7 @@ func NewFileInput(path string) *FileInput {
 		q = append(q, path)
 	}
 
-	f = &FileInput{
+	f = &Path{
 		queue: q,
 	}
 
@@ -72,11 +70,11 @@ func writeFile(b []byte, dir, file string) {
 }
 
 // Send delivers messages to the channel
-func (f *FileInput) Send(messages chan Message) {
+func (p *Path) Send(messages chan rmq.Message) {
 	var num int
 
 	// loop over the queued up files
-	for _, file := range f.queue {
+	for _, file := range p.queue {
 		// open file from the queue
 		fh, err := os.Open(file)
 		if err != nil {
@@ -98,8 +96,15 @@ func (f *FileInput) Send(messages chan Message) {
 
 }
 
-// NewFileOutput creates a Path to output files in from RabbitMQ
-func NewFileOutput(path string, batchSize int) *Path {
+// NewOutput creates a Path to output files in from RabbitMQ
+func NewOutput(path string, batchSize int) *Path {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		log.Println("Creating missing directory:", path)
+		err := os.MkdirAll(path, os.ModePerm)
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
 	return &Path{
 		name:      path,
 		batchSize: batchSize,
@@ -107,7 +112,7 @@ func NewFileOutput(path string, batchSize int) *Path {
 }
 
 // Receive will handle messages and save to path
-func (p *Path) Receive(messages chan Message) {
+func (p *Path) Receive(messages chan rmq.Message) {
 
 	// create new TarballBuilder
 	builder := NewTarballBuilder(p.batchSize)
