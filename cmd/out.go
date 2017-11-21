@@ -20,6 +20,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/meltwater/rabbitio/file"
 	"github.com/meltwater/rabbitio/rmq"
 	"github.com/spf13/cobra"
 )
@@ -40,7 +41,7 @@ var outCmd = &cobra.Command{
 		channel := make(chan rmq.Message, prefetch*2)
 
 		rabbit := rmq.NewConsumer(uri, exchange, queue, routingKey, tag, prefetch)
-		savePath := NewFileOutput(outputDirectory, batchSize)
+		path := file.NewOutput(outputDirectory, batchSize)
 
 		go rabbit.Consume(channel)
 
@@ -52,7 +53,7 @@ var outCmd = &cobra.Command{
 			close(channel)
 		}()
 
-		savePath.Receive(channel)
+		path.Receive(channel)
 	},
 }
 

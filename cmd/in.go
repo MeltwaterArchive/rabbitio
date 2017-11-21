@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"github.com/meltwater/rabbitio/file"
 	"github.com/meltwater/rabbitio/rmq"
 	"github.com/spf13/cobra"
 )
@@ -34,7 +35,7 @@ var inCmd = &cobra.Command{
 
 		override := rmq.Override{RoutingKey: routingKey}
 		rabbit := rmq.NewPublisher(uri, exchange, queue, tag, prefetch)
-		path := NewFileInput(fileInput)
+		path := file.NewInput(fileInput)
 
 		go path.Send(channel)
 
