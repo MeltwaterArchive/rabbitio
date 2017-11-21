@@ -3,7 +3,7 @@ BUILD_DIR?=$(shell pwd)/build
 NAME=rio
 DIRECTORIES=./ ./cmd ./rmq ./file
 
-all: tools deps test build-all
+all: tools deps test
 
 tools:
 	go get -u github.com/golang/dep/cmd/dep
