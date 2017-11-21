@@ -25,6 +25,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/meltwater/rabbitio/rmq"
 	"github.com/pborman/uuid"
 )
 
@@ -64,7 +65,7 @@ func (t *TarballBuilder) getWriters() (err error) {
 }
 
 // add a new file to the tarball writer
-func (t *TarballBuilder) addFile(tw *tar.Writer, name string, m *Message) error {
+func (t *TarballBuilder) addFile(tw *tar.Writer, name string, m *rmq.Message) error {
 	header := new(tar.Header)
 	header.Name = name
 	header.Size = int64(len(m.Body))
@@ -90,7 +91,7 @@ func (t *TarballBuilder) addFile(tw *tar.Writer, name string, m *Message) error 
 }
 
 // UnPack will decompress and send messages out on channel from file
-func UnPack(file *os.File, messages chan Message) (n int, err error) {
+func UnPack(file *os.File, messages chan rmq.Message) (n int, err error) {
 
 	// wrap fh in a gzip reader
 	gr, err := gzip.NewReader(file)
@@ -119,14 +120,14 @@ func UnPack(file *os.File, messages chan Message) (n int, err error) {
 		}
 
 		// generate and push the message to the output channel
-		messages <- *NewMessageFromAttrs(buf.Bytes(), hdr.Xattrs)
+		messages <- *rmq.NewMessageFromAttrs(buf.Bytes(), hdr.Xattrs)
 		n++
 	}
 	return n, err
 }
 
 // Pack messages from the channel into the directory
-func (t *TarballBuilder) Pack(messages chan Message, dir string) {
+func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string) {
 
 	t.wg.Add(1)
 

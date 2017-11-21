@@ -24,52 +24,20 @@ import (
 type RabbitMQ struct {
 	conn            *amqp.Connection
 	channel         *amqp.Channel
+	override        Override
 	exchange        string
 	contentType     string
 	contentEncoding string
 	queue           string
 	tag             string
-	routingKey      string
 	prefetch        int
 	consume         bool
 	publish         bool
 }
 
-// Message contains the most basic about the message
-type Message struct {
-	Body       []byte
-	RoutingKey string
-	Headers    map[string]interface{}
-}
-
 // Override will be used to override RabbitMQ settings on publishing messages
 type Override struct {
 	RoutingKey string
-}
-
-// NewMessageFromAttrs will create a new message from a byte slice and attributes
-func NewMessageFromAttrs(bytes []byte, attrs map[string]string) *Message {
-
-	// add header information to the Message
-	var headers = make(map[string]interface{})
-	var key string
-	for k, v := range attrs {
-		switch k {
-		// use the provided routing key to override tarball configuration
-		case "amqp.routingKey":
-		default:
-			headers[k] = v
-		}
-	}
-
-	// create a message
-	m := &Message{
-		Body:       bytes,
-		RoutingKey: key,
-		Headers:    headers,
-	}
-
-	return m
 }
 
 // NewRabbitMQ creates and sets up a RabbitOutput

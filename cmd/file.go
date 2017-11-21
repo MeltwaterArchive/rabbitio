@@ -109,7 +109,7 @@ func NewFileOutput(path string, batchSize int) *Path {
 }
 
 // Receive will handle messages and save to path
-func (p *Path) Receive(messages chan Message) {
+func (p *Path) Receive(messages chan rmq.Message) {
 
 	// create new TarballBuilder
 	builder := NewTarballBuilder(p.batchSize)

@@ -30,12 +30,11 @@ var inCmd = &cobra.Command{
 	Long:  `Specify a directory or file and tarballs will be published.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		channel := make(chan Message, prefetch)
-
-		rabbit := NewRabbitMQ(uri, exchange, userQueue, routingKey, tag, prefetch, false, true)
-		path := NewFileInput(fileInput)
+		channel := make(chan rmq.Message, prefetch)
 
 		override := rmq.Override{RoutingKey: routingKey}
+		rabbit := rmq.NewRabbitMQ(uri, exchange, userQueue, routingKey, tag, prefetch, false, true)
+		path := NewFileInput(fileInput)
 
 		go path.Send(channel)
 
