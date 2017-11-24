@@ -1,4 +1,7 @@
+# exclude binary
+rio
+
+# exclude dirs
 data/
-data2dir/
 build/
 vendor/
