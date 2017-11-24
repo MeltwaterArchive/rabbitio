@@ -1,6 +1,33 @@
 # Rabbit IO - Work in Progress  
 This is a tool to support backup and restoring of RabbitMQ messages, currently work in progress and might not be functional
 
+## Requirements
+
+You will need following to build `rabbitio` locally:
+
+- [Golang](https://golang.org/dl/)
+- [dep](https://github.com/golang/dep)
+
+## Getting started
+
+If you plan to work on `rabbitio` you will need to:
+
+1. Create directories
+```
+mkdir -p $GOPATH/src/github.com/meltwater
+```
+
+2. Clone `rabbitio`:
+```
+cd $GOPATH/src/github.com/meltwater
+git clone git@github.com:meltwater/rabbitio.git
+```
+
+3. Make:
+```
+cd rabbitio
+make && make build
+```
 
 ## Maintainers
 

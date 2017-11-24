@@ -10,7 +10,7 @@ tools:
 	go get -u github.com/mitchellh/gox
 
 deps:
-	 dep ensure
+	dep ensure
 
 test:
 	go vet ${DIRECTORIES}
