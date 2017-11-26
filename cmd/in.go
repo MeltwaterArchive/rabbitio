@@ -44,6 +44,7 @@ var inCmd = &cobra.Command{
 
 		go rabbit.Publish(channel, override)
 		path.Send(channel)
+		rabbit.Close()
 	},
 }
 
