@@ -90,5 +90,6 @@ func (r *RabbitMQ) Publish(messages chan Message, o Override) {
 		); err != nil {
 			log.Fatalf("writer failed to write document to rabbit: %s", err)
 		}
+		r.Wg.Done()
 	}
 }

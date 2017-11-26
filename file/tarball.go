@@ -91,7 +91,7 @@ func (t *TarballBuilder) addFile(tw *tar.Writer, name string, m *rmq.Message) er
 }
 
 // UnPack will decompress and send messages out on channel from file
-func UnPack(file *os.File, messages chan rmq.Message) (n int, err error) {
+func UnPack(wg *sync.WaitGroup, file *os.File, messages chan rmq.Message) (n int, err error) {
 
 	// wrap fh in a gzip reader
 	gr, err := gzip.NewReader(file)
@@ -109,6 +109,7 @@ func UnPack(file *os.File, messages chan rmq.Message) (n int, err error) {
 		if terr != nil {
 			return n, terr
 		}
+		wg.Add(1)
 
 		// create a Buffer to work on
 		// TODO: reuse if GC pressure is a problem

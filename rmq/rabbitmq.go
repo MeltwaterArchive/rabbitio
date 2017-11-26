@@ -14,7 +14,11 @@
 
 package rmq
 
-import "github.com/streadway/amqp"
+import (
+	"sync"
+
+	"github.com/streadway/amqp"
+)
 
 // RabbitMQ type for talking to RabbitMQ
 type RabbitMQ struct {
@@ -29,6 +33,7 @@ type RabbitMQ struct {
 	prefetch        int
 	consume         bool
 	publish         bool
+	Wg              *sync.WaitGroup
 }
 
 // Override will be used to override RabbitMQ settings on publishing messages
