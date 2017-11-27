@@ -19,6 +19,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/meltwater/rabbitio/rmq"
 )
@@ -28,6 +29,7 @@ type Path struct {
 	name      string
 	batchSize int
 	queue     []string
+	Wg        *sync.WaitGroup
 }
 
 // NewInput returns a *Path with a queue of files paths, all files in a directory
@@ -83,15 +85,17 @@ func (p *Path) Send(messages chan rmq.Message) {
 		// and clean up afterwards
 		defer fh.Close()
 
-		tarNum, err := UnPack(fh, messages)
+		tarNum, err := UnPack(p.Wg, fh, messages)
 		if err != nil {
 			log.Fatalf("Failed to unpack: %s ", err)
 		}
 		log.Printf("Extracted %d Messages from tarball: %s", tarNum, file)
 		num = num + tarNum
 	}
-	// when all files are read, close
+
+	p.Wg.Wait()
 	close(messages)
+	// when all files are read, close
 	log.Printf("Total %d Messages from tarballs", num)
 
 }

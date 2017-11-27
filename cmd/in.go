@@ -15,6 +15,8 @@
 package cmd
 
 import (
+	"sync"
+
 	"github.com/meltwater/rabbitio/file"
 	"github.com/meltwater/rabbitio/rmq"
 	"github.com/spf13/cobra"
@@ -32,14 +34,17 @@ var inCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		channel := make(chan rmq.Message, prefetch)
+		var wg sync.WaitGroup
 
 		override := rmq.Override{RoutingKey: routingKey}
-		rabbit := rmq.NewPublisher(uri, exchange, queue, tag, prefetch)
 		path := file.NewInput(fileInput)
+		path.Wg = &wg
+		rabbit := rmq.NewPublisher(uri, exchange, queue, tag, prefetch)
+		rabbit.Wg = &wg
 
-		go path.Send(channel)
-
-		rabbit.Publish(channel, override)
+		go rabbit.Publish(channel, override)
+		path.Send(channel)
+		rabbit.Close()
 	},
 }
 

@@ -90,5 +90,20 @@ func (r *RabbitMQ) Publish(messages chan Message, o Override) {
 		); err != nil {
 			log.Fatalf("writer failed to write document to rabbit: %s", err)
 		}
+		r.Wg.Done()
 	}
+}
+
+// Close will close the RabbitMQ channel and connection
+func (r *RabbitMQ) Close() error {
+	err := r.channel.Close()
+	if err != nil {
+		return err
+	}
+	err = r.conn.Close()
+	if err != nil {
+		return err
+	}
+	log.Println("RabbitMQ Connection closed with success")
+	return nil
 }
