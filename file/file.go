@@ -116,11 +116,11 @@ func NewOutput(path string, batchSize int) *Path {
 }
 
 // Receive will handle messages and save to path
-func (p *Path) Receive(messages chan rmq.Message) {
+func (p *Path) Receive(messages chan rmq.Message, verify chan uint64) {
 
 	// create new TarballBuilder
 	builder := NewTarballBuilder(p.batchSize)
 
-	builder.Pack(messages, p.name)
+	builder.Pack(messages, p.name, verify)
 
 }

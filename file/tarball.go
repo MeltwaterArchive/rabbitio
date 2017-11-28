@@ -128,13 +128,15 @@ func UnPack(wg *sync.WaitGroup, file *os.File, messages chan rmq.Message) (n int
 }
 
 // Pack messages from the channel into the directory
-func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string) {
+func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string, verify chan uint64) {
 
 	t.wg.Add(1)
 
 	docNum := 0
 	fileNum := 0
+	var deliveryTag uint64
 	for doc := range messages {
+		deliveryTag = doc.DeliveryTag
 
 		if docNum >= t.tarSize {
 			fileNum++
@@ -144,6 +146,9 @@ func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string) {
 
 			// writes to tarball here when reached the t.tarSize
 			writeFile(t.buf.Bytes(), dir, fmt.Sprintf("%d_messages_%d.tgz", fileNum, docNum))
+			log.Println("LOG TAG", deliveryTag)
+			verify <- deliveryTag
+			log.Println("LOG TAG END", deliveryTag)
 
 			err := t.getWriters()
 			if err != nil {
@@ -164,6 +169,9 @@ func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string) {
 
 	// writes to tarball here when not reached the t.tarSize
 	writeFile(t.buf.Bytes(), dir, fmt.Sprintf("%d_messages_%d.tgz", fileNum, docNum))
+	log.Println("LOG TAG", deliveryTag)
+	verify <- deliveryTag
+	log.Println("LOG TAG END", deliveryTag)
 
 	t.wg.Done()
 
