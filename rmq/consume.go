@@ -76,24 +76,14 @@ func NewConsumer(amqpURI, exchange, queue, routingKey, tag string, prefetch int)
 	return r
 }
 
-func (r *RabbitMQ) ackMultiple(deliveryTag <-chan uint64) {
-	// for {
-	// 	select {
-	// 	case tag := <-deliveryTag:
-	// 		log.Println("GOT tag:", tag)
-	// 		r.channel.Ack(tag, true)
-	// 		log.Println("ACKED tag:", tag)
-	// 	}
-	// }
-	for tag := range deliveryTag {
-		log.Println("GOT tag:", tag)
-		r.channel.Ack(tag, true)
-		log.Println("ACKED tag:", tag)
+func (r *RabbitMQ) ackMultiple(deliveryTag <-chan Verify) {
+	for v := range deliveryTag {
+		r.channel.Ack(v.Tag, v.MultiAck)
 	}
 }
 
 // Consume outputs a stream of Message into a channel from rabbit
-func (r *RabbitMQ) Consume(out chan Message, verify <-chan uint64) {
+func (r *RabbitMQ) Consume(out chan Message, verify <-chan Verify) {
 	go r.ackMultiple(verify)
 
 	// set up a channel consumer
@@ -121,12 +111,7 @@ func (r *RabbitMQ) Consume(out chan Message, verify <-chan uint64) {
 		}
 		// write Message to channel
 		out <- msg
-		// ack message
-		// r.channel.Ack(d.DeliveryTag, false)
 	}
 
 	log.Print("All messages consumed")
-
-	// when deliveries are done, close
-	close(out)
 }

@@ -22,6 +22,12 @@ type Message struct {
 	DeliveryTag uint64
 }
 
+// Verify will be used to Ack Message from the queue
+type Verify struct {
+	Tag      uint64
+	MultiAck bool
+}
+
 // NewMessageFromAttrs will create a new message from a byte slice and attributes
 func NewMessageFromAttrs(bytes []byte, attrs map[string]string) *Message {
 

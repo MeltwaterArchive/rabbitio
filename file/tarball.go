@@ -128,38 +128,42 @@ func UnPack(wg *sync.WaitGroup, file *os.File, messages chan rmq.Message) (n int
 }
 
 // Pack messages from the channel into the directory
-func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string, verify chan uint64) {
+func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string, verify chan rmq.Verify) {
 
 	t.wg.Add(1)
 
 	docNum := 0
 	fileNum := 0
+
 	var deliveryTag uint64
 	for doc := range messages {
 		deliveryTag = doc.DeliveryTag
 
+		docNum++
 		if docNum >= t.tarSize {
+
 			fileNum++
 			t.tar.Flush()
 			t.tar.Close()
 			t.gzip.Close()
 
 			// writes to tarball here when reached the t.tarSize
-			writeFile(t.buf.Bytes(), dir, fmt.Sprintf("%d_messages_%d.tgz", fileNum, docNum))
-			log.Println("LOG TAG", deliveryTag)
-			verify <- deliveryTag
-			log.Println("LOG TAG END", deliveryTag)
+			err := writeFile(t.buf.Bytes(), dir, fmt.Sprintf("%d_messages_%d.tgz", fileNum, docNum))
+			if err != nil {
+				log.Fatal(err)
+			}
+			verify <- rmq.Verify{MultiAck: true, Tag: doc.DeliveryTag}
 
-			err := t.getWriters()
+			err = t.getWriters()
 			if err != nil {
 				log.Fatal(err)
 			}
 			docNum = 0
 		}
+
 		if err := t.addFile(t.tar, uuid.New(), &doc); err != nil {
 			log.Fatalln(err)
 		}
-		docNum++
 	}
 	t.tar.Flush()
 	t.tar.Close()
@@ -168,13 +172,19 @@ func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string, verify chan
 	fileNum++
 
 	// writes to tarball here when not reached the t.tarSize
-	writeFile(t.buf.Bytes(), dir, fmt.Sprintf("%d_messages_%d.tgz", fileNum, docNum))
-	log.Println("LOG TAG", deliveryTag)
-	verify <- deliveryTag
-	log.Println("LOG TAG END", deliveryTag)
+	err := writeFile(t.buf.Bytes(), dir, fmt.Sprintf("%d_messages_%d.tgz", fileNum, docNum))
+	if err != nil {
+		log.Fatal(err)
+
+	}
+
+	// Does not ack the messages unless it is repeated, not sure why yet..
+	// Might want to change using delivery ack interface
+	verify <- rmq.Verify{MultiAck: true, Tag: deliveryTag}
+	verify <- rmq.Verify{MultiAck: true, Tag: deliveryTag}
 
 	t.wg.Done()
-
+	close(verify)
 	log.Print("tarball writer closing")
 }
 

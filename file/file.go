@@ -62,13 +62,14 @@ func NewInput(path string) *Path {
 	return f
 }
 
-func writeFile(b []byte, dir, file string) {
+func writeFile(b []byte, dir, file string) error {
 	filePath := filepath.Join(dir, file)
 	err := ioutil.WriteFile(filePath, b, 0644)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	log.Printf("Wrote %d bytes to %s", len(b), filePath)
+	return nil
 }
 
 // Send delivers messages to the channel
@@ -116,7 +117,7 @@ func NewOutput(path string, batchSize int) *Path {
 }
 
 // Receive will handle messages and save to path
-func (p *Path) Receive(messages chan rmq.Message, verify chan uint64) {
+func (p *Path) Receive(messages chan rmq.Message, verify chan rmq.Verify) {
 
 	// create new TarballBuilder
 	builder := NewTarballBuilder(p.batchSize)
