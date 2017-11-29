@@ -39,11 +39,12 @@ var outCmd = &cobra.Command{
 	the consumption and save the last message buffers.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		channel := make(chan rmq.Message, prefetch*2)
+		verify := make(chan rmq.Verify)
 
 		rabbit := rmq.NewConsumer(uri, exchange, queue, routingKey, tag, prefetch)
 		path := file.NewOutput(outputDirectory, batchSize)
 
-		go rabbit.Consume(channel)
+		go rabbit.Consume(channel, verify)
 
 		c := make(chan os.Signal, 2)
 		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -53,7 +54,7 @@ var outCmd = &cobra.Command{
 			close(channel)
 		}()
 
-		path.Receive(channel)
+		path.Receive(channel, verify)
 	},
 }
 

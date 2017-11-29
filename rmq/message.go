@@ -16,9 +16,16 @@ package rmq
 
 // Message contains the most basic about the message
 type Message struct {
-	Body       []byte
-	RoutingKey string
-	Headers    map[string]interface{}
+	Body        []byte
+	RoutingKey  string
+	Headers     map[string]interface{}
+	DeliveryTag uint64
+}
+
+// Verify will be used to Ack Message from the queue
+type Verify struct {
+	Tag      uint64
+	MultiAck bool
 }
 
 // NewMessageFromAttrs will create a new message from a byte slice and attributes

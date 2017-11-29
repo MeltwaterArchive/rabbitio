@@ -76,8 +76,15 @@ func NewConsumer(amqpURI, exchange, queue, routingKey, tag string, prefetch int)
 	return r
 }
 
+func (r *RabbitMQ) ackMultiple(deliveryTag <-chan Verify) {
+	for v := range deliveryTag {
+		r.channel.Ack(v.Tag, v.MultiAck)
+	}
+}
+
 // Consume outputs a stream of Message into a channel from rabbit
-func (r *RabbitMQ) Consume(out chan Message) {
+func (r *RabbitMQ) Consume(out chan Message, verify <-chan Verify) {
+	go r.ackMultiple(verify)
 
 	// set up a channel consumer
 	deliveries, err := r.channel.Consume(
@@ -97,18 +104,14 @@ func (r *RabbitMQ) Consume(out chan Message) {
 	for d := range deliveries {
 		// create a new Message for the rabbit message
 		msg := Message{
-			Body:       d.Body,
-			RoutingKey: d.RoutingKey,
-			Headers:    d.Headers,
+			Body:        d.Body,
+			RoutingKey:  d.RoutingKey,
+			Headers:     d.Headers,
+			DeliveryTag: d.DeliveryTag,
 		}
 		// write Message to channel
 		out <- msg
-		// ack message
-		r.channel.Ack(d.DeliveryTag, false)
 	}
 
 	log.Print("All messages consumed")
-
-	// when deliveries are done, close
-	close(out)
 }
