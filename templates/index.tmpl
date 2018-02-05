@@ -1,0 +1,21 @@
+{{ define "index.tmpl" }}
+<html>
+  <h1>
+	   {{ .title }}
+  </h1>
+
+<table>
+  <tr>
+    <th>Queue Name</th>
+    <th>Queue Messages</th>
+    <th>Backup Action</th>
+  </tr>
+   {{ range .queues }}
+  <tr align=right>
+   <td> {{ .Name }} </td>
+   <td> {{ .Messages }} </td>
+  </tr>
+   {{ end }}
+</table>
+</html>
+{{ end }}
