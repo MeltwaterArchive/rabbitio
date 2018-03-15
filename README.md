@@ -8,7 +8,7 @@ Pick your archtype from [Releases](https://github.com/meltwater/rabbitio/release
 
 Example with `linux-amd64` and version `v0.5.1`:
 ```
-wget https://github.com/meltwater/rabbitio/releases/download/v0.5.1/rio-v0.5.1-linux-amd64 -O rabbitio
+wget https://github.com/meltwater/rabbitio/releases/download/v0.5.1/rabbitio-v0.5.1-linux-amd64 -O rabbitio
 chmod +755 rabbitio
 ```
 
@@ -51,7 +51,7 @@ We interrupt when the queue is empty by directly using a combination of `CTRL + 
 
 ## Detailed Usage
 ```
-$ rabbitio 
+$ rabbitio
 Rabbit IO will help backup and restore your messages in RabbitMQ
 
 Usage:
@@ -103,4 +103,3 @@ Also feel free to drop a line to the maintainers:
 - Joel ([@vorce](https://github.com/vorce))
 - Stian ([@stiangrindvoll](https://github.com/stiangrindvoll))
 - Team Blacksmiths ([all.blacksmiths@meltwater.com](mailto:all.blacksmiths@meltwater.com))
-2
