@@ -1,7 +1,8 @@
 # exclude binary
-rio
+rabbitio
 
-# exclude dirs
+# exclude build and example files/dirs
 data/
 build/
 vendor/
+message*

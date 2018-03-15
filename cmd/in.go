@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"sync"
+	"errors"
 
 	"github.com/meltwater/rabbitio/file"
 	"github.com/meltwater/rabbitio/rmq"
@@ -31,8 +32,11 @@ var inCmd = &cobra.Command{
 	Use:   "in",
 	Short: "Publishes documents from tarballs into RabbitMQ exchange",
 	Long:  `Specify a directory or file and tarballs will be published.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 
+		if fileInput == "" {
+			return errors.New("please specify a tarball or directory with tarballs using the -f flag")
+		}
 		channel := make(chan rmq.Message, prefetch)
 		var wg sync.WaitGroup
 
@@ -45,10 +49,11 @@ var inCmd = &cobra.Command{
 		go rabbit.Publish(channel, override)
 		path.Send(channel)
 		rabbit.Close()
+		return nil
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(inCmd)
-	inCmd.Flags().StringVarP(&fileInput, "file", "f", ".", "File is specified as either file or directory to restore into RabbitMQ")
+	inCmd.Flags().StringVarP(&fileInput, "file", "f", "", "File is specified as either file or directory to restore into RabbitMQ")
 }

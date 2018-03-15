@@ -29,7 +29,7 @@ var (
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "rio",
+	Use:   "rabbitio",
 	Short: "Rabbit IO will help backup and restore your messages in RabbitMQ",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:

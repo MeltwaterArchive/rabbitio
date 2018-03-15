@@ -1,6 +1,6 @@
 VERSION := $(shell git describe --tags)
 BUILD_DIR?=$(shell pwd)/build
-NAME=rio
+NAME=rabbitio
 DIRECTORIES=./ ./cmd ./rmq ./file
 
 all: tools deps test
