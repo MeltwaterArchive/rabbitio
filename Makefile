@@ -14,7 +14,7 @@ deps:
 
 test:
 	go vet ${DIRECTORIES}
-	go test -v ${DIRECTORIES}
+	go test ${DIRECTORIES}
 
 build:
 	go build -o ${NAME} -ldflags "-X main.version=${VERSION}" main.go

@@ -17,17 +17,45 @@ package rmq
 import (
 	"testing"
 
+	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewMessageFromAttrs(t *testing.T) {
+func TestToXAttrs(t *testing.T) {
+	messageHeaders := make(amqp.Table)
+	messageHeaders["myStringHeader"] = "myString"
+	messageHeaders["myInt32Header"] = int32(32)
+	messageHeaders["myInt64Header"] = int64(64)
+	messageHeaders["myFloat32Header"] = float32(32.32)
+	messageHeaders["myFloat64Header"] = float64(64.64)
+	messageHeaders["myBoolHeader"] = true
+	message := &Message{Headers: messageHeaders}
+
+	var attrHeaders = make(map[string]string)
+	attrHeaders["amqp.Headers.string.myStringHeader"] = "myString"
+	attrHeaders["amqp.Headers.int.myInt32Header"] = "32"
+	attrHeaders["amqp.Headers.int.myInt64Header"] = "64"
+	attrHeaders["amqp.Headers.float.myFloat32Header"] = "32.32"
+	attrHeaders["amqp.Headers.float.myFloat64Header"] = "64.64"
+	attrHeaders["amqp.Headers.bool.myBoolHeader"] = "true"
+
+	attrs := message.ToXAttrs()
+
+	assert.Equal(t, attrHeaders, attrs)
+	assert.NoError(t, messageHeaders.Validate())
+}
+
+func TestNewMessage(t *testing.T) {
 	var headers = make(map[string]string)
-	headers["amqp.routingKey"] = "routingKey from tarball header"
-	headers["myHeaderString"] = "myString"
+	headers["amqp.routingKey"] = "routingKey from tarball XAttrs"
+	headers["amqp.Headers.string.myHeader"] = "myString"
+	headers["amqp.Headers.int.myIntHeader"] = "456"
+	headers["amqp.Headers.float.myFloatHeader"] = "123.123"
+	headers["amqp.Headers.bool.myBoolHeader"] = "true"
 
-	m := *NewMessageFromAttrs([]byte("Message"), headers)
+	m := NewMessage([]byte("Message"), headers)
 
-	assert.Equal(t, "routingKey from tarball header", m.RoutingKey)
+	assert.Equal(t, "routingKey from tarball XAttrs", m.RoutingKey)
 	assert.Equal(t, []byte("Message"), m.Body)
-	assert.Equal(t, "myString", m.Headers["myHeaderString"])
+	assert.NoError(t, m.Headers.Validate())
 }

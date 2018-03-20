@@ -14,11 +14,19 @@
 
 package rmq
 
+import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/streadway/amqp"
+)
+
 // Message contains the most basic about the message
 type Message struct {
 	Body        []byte
 	RoutingKey  string
-	Headers     map[string]interface{}
+	Headers     amqp.Table
 	DeliveryTag uint64
 }
 
@@ -28,28 +36,69 @@ type Verify struct {
 	MultiAck bool
 }
 
-// NewMessageFromAttrs will create a new message from a byte slice and attributes
-func NewMessageFromAttrs(bytes []byte, attrs map[string]string) *Message {
+// ToXAttrs takes amqp headers and convert them to attributes
+func (m *Message) ToXAttrs() map[string]string {
+
+	xattrs := make(map[string]string)
+	var headerType = "string"
+
+	for k, v := range m.Headers {
+		switch v.(type) {
+		case int, int32, int64:
+			headerType = "int"
+		case float32, float64:
+			headerType = "float"
+		case bool:
+			headerType = "bool"
+		}
+		xattrs[fmt.Sprintf("amqp.Headers.%s.%s", headerType, k)] = fmt.Sprintf("%v", v)
+	}
+	return xattrs
+}
+
+// NewMessage will create a new message from a byte slice and attributes
+func NewMessage(bytes []byte, xattr map[string]string) *Message {
 
 	// add amqp header information to the Message
-	var headers = make(map[string]interface{})
-	var key string
+	var headers = make(amqp.Table)
+	var routingKey string
 
 	// need to support more than just string here for v
-	for k, v := range attrs {
-		switch k {
-		// use the routing key from tarball header configuration
-		case "amqp.routingKey":
-			key = v
-		default:
-			headers[k] = v
+	for k, v := range xattr {
+
+		switch {
+		case k == "amqp.routingKey":
+			routingKey = v
+		case strings.HasPrefix(k, "amqp.Headers."):
+			// th is now [type, header]
+			th := strings.SplitN(strings.TrimPrefix(k, "amqp.Headers."), ".", 2)
+			headerType := th[0]
+			header := strings.Join(th[1:], ".")
+
+			switch headerType {
+			case "string":
+				headers[header] = v
+			case "bool":
+				if b, err := strconv.ParseBool(v); err == nil {
+					fmt.Printf("%T, %v\n", b, b)
+					headers[header] = b
+				}
+			case "int":
+				if i, err := strconv.ParseInt(v, 10, 64); err == nil {
+					headers[header] = i
+				}
+			case "float":
+				if f, err := strconv.ParseFloat(v, 64); err == nil {
+					headers[header] = f
+				}
+			}
 		}
 	}
 
 	// create a message
 	m := &Message{
 		Body:       bytes,
-		RoutingKey: key,
+		RoutingKey: routingKey,
 		Headers:    headers,
 	}
 
