@@ -21,6 +21,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	myStringHeader  = "amqp.Headers.string.myStringHeader"
+	myInt32Header   = "amqp.Headers.int.myInt32Header"
+	myInt64Header   = "amqp.Headers.int.myInt64Header"
+	myFloat32Header = "amqp.Headers.float.myFloat32Header"
+	myFloat64Header = "amqp.Headers.float.myFloat64Header"
+	myBoolHeader    = "amqp.Headers.bool.myBoolHeader"
+)
+
 func TestToXAttrs(t *testing.T) {
 	messageHeaders := make(amqp.Table)
 	messageHeaders["myStringHeader"] = "myString"
@@ -32,26 +41,34 @@ func TestToXAttrs(t *testing.T) {
 	message := &Message{Headers: messageHeaders}
 
 	var attrHeaders = make(map[string]string)
-	attrHeaders["amqp.Headers.string.myStringHeader"] = "myString"
-	attrHeaders["amqp.Headers.int.myInt32Header"] = "32"
-	attrHeaders["amqp.Headers.int.myInt64Header"] = "64"
-	attrHeaders["amqp.Headers.float.myFloat32Header"] = "32.32"
-	attrHeaders["amqp.Headers.float.myFloat64Header"] = "64.64"
-	attrHeaders["amqp.Headers.bool.myBoolHeader"] = "true"
+	attrHeaders[myStringHeader] = "myString"
+	attrHeaders[myInt32Header] = "32"
+	attrHeaders[myInt64Header] = "64"
+	attrHeaders[myFloat32Header] = "32.32"
+	attrHeaders[myFloat64Header] = "64.64"
+	attrHeaders[myBoolHeader] = "true"
 
 	attrs := message.ToXAttrs()
 
-	assert.Equal(t, attrHeaders, attrs)
-	assert.NoError(t, messageHeaders.Validate())
+	assert.NoError(t, messageHeaders.Validate(), "should be valid Headers")
+
+	assert.Equal(t, attrHeaders[myStringHeader], attrs[myStringHeader])
+	assert.Equal(t, attrHeaders[myInt32Header], attrs[myInt32Header])
+	assert.Equal(t, attrHeaders[myInt64Header], attrs[myInt64Header])
+	assert.Equal(t, attrHeaders[myFloat32Header], attrs[myFloat32Header])
+	assert.Equal(t, attrHeaders[myFloat64Header], attrs[myFloat64Header])
+	assert.Equal(t, attrHeaders[myBoolHeader], attrs[myBoolHeader])
 }
 
 func TestNewMessage(t *testing.T) {
 	var headers = make(map[string]string)
 	headers["amqp.routingKey"] = "routingKey from tarball XAttrs"
-	headers["amqp.Headers.string.myHeader"] = "myString"
-	headers["amqp.Headers.int.myIntHeader"] = "456"
-	headers["amqp.Headers.float.myFloatHeader"] = "123.123"
-	headers["amqp.Headers.bool.myBoolHeader"] = "true"
+	headers[myStringHeader] = "myString"
+	headers[myInt32Header] = "3232"
+	headers[myInt64Header] = "6464"
+	headers[myFloat32Header] = "32.123"
+	headers[myFloat64Header] = "64.123"
+	headers[myBoolHeader] = "true"
 
 	m := NewMessage([]byte("Message"), headers)
 

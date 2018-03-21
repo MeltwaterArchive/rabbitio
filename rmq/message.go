@@ -40,7 +40,7 @@ type Verify struct {
 func (m *Message) ToXAttrs() map[string]string {
 
 	xattrs := make(map[string]string)
-	var headerType = "string"
+	var headerType string
 
 	for k, v := range m.Headers {
 		switch v.(type) {
@@ -50,6 +50,8 @@ func (m *Message) ToXAttrs() map[string]string {
 			headerType = "float"
 		case bool:
 			headerType = "bool"
+		case string:
+			headerType = "string"
 		}
 		xattrs[fmt.Sprintf("amqp.Headers.%s.%s", headerType, k)] = fmt.Sprintf("%v", v)
 	}
@@ -76,11 +78,8 @@ func NewMessage(bytes []byte, xattr map[string]string) *Message {
 			header := strings.Join(th[1:], ".")
 
 			switch headerType {
-			case "string":
-				headers[header] = v
 			case "bool":
 				if b, err := strconv.ParseBool(v); err == nil {
-					fmt.Printf("%T, %v\n", b, b)
 					headers[header] = b
 				}
 			case "int":
@@ -91,6 +90,8 @@ func NewMessage(bytes []byte, xattr map[string]string) *Message {
 				if f, err := strconv.ParseFloat(v, 64); err == nil {
 					headers[header] = f
 				}
+			case "string":
+				headers[header] = v
 			}
 		}
 	}
