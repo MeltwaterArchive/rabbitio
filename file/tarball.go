@@ -71,15 +71,8 @@ func (t *TarballBuilder) addFile(tw *tar.Writer, name string, m *rmq.Message) er
 	header.Size = int64(len(m.Body))
 	header.Mode = 0644
 	header.ModTime = time.Now()
-	header.Xattrs = make(map[string]string)
+	header.Xattrs = m.ToXAttrs()
 	header.Xattrs["amqp.routingKey"] = m.RoutingKey
-
-	for k, v := range m.Headers {
-		switch v.(type) {
-		case string:
-			header.Xattrs[k] = v.(string)
-		}
-	}
 
 	if err := tw.WriteHeader(header); err != nil {
 		return err
@@ -121,7 +114,7 @@ func UnPack(wg *sync.WaitGroup, file *os.File, messages chan rmq.Message) (n int
 		}
 
 		// generate and push the message to the output channel
-		messages <- *rmq.NewMessageFromAttrs(buf.Bytes(), hdr.Xattrs)
+		messages <- *rmq.NewMessage(buf.Bytes(), hdr.Xattrs)
 		n++
 	}
 	return n, err

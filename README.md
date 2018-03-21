@@ -75,7 +75,14 @@ Flags:
 Use "rabbitio [command] --help" for more information about a command.
 
 ```
+### AMQP Headers and Routing Key
 
+Currently RabbitIO supports AMQP Headers of the types:
+* string
+* number
+* boolean
+
+When you read messages from a queue, the headers as well as the routing key will be saved as metadata in the tarballs, utilizing what in tar is called XAttrs. This is helpful if you one day want to replay the data back into the original queue, while keeping the attributes that belong to the message. This currently only works on messages in the tarballs that has been written by RabbitIO.
 
 ## Contributing
 
