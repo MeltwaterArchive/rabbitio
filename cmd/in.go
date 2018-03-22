@@ -15,8 +15,8 @@
 package cmd
 
 import (
-	"sync"
 	"errors"
+	"sync"
 
 	"github.com/meltwater/rabbitio/file"
 	"github.com/meltwater/rabbitio/rmq"

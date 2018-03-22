@@ -22,7 +22,11 @@ import (
 	"sync"
 
 	"github.com/meltwater/rabbitio/rmq"
+	"github.com/spf13/afero"
 )
+
+// fs is our os.File handler
+var fs = afero.NewOsFs()
 
 // Path is a directory file path
 type Path struct {
@@ -64,7 +68,7 @@ func NewInput(path string) *Path {
 
 func writeFile(b []byte, dir, file string) error {
 	filePath := filepath.Join(dir, file)
-	err := ioutil.WriteFile(filePath, b, 0644)
+	err := afero.WriteFile(fs, filePath, b, 0644)
 	if err != nil {
 		return err
 	}
@@ -102,18 +106,32 @@ func (p *Path) Send(messages chan rmq.Message) {
 }
 
 // NewOutput creates a Path to output files in from RabbitMQ
-func NewOutput(path string, batchSize int) *Path {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		log.Println("Creating missing directory:", path)
-		err := os.MkdirAll(path, os.ModePerm)
-		if err != nil {
-			log.Fatalln(err)
-		}
-	}
-	return &Path{
+func NewOutput(path string, batchSize int) (*Path, error) {
+
+	p := &Path{
 		name:      path,
 		batchSize: batchSize,
 	}
+
+	if err := p.create(); err != nil {
+		return p, err
+	}
+
+	return p, nil
+}
+
+// Create creates the target directory if missing
+func (p *Path) create() error {
+	if _, err := fs.Stat(p.name); os.IsNotExist(err) {
+		err := fs.MkdirAll(p.name, os.ModePerm)
+		if err != nil {
+			return err
+		}
+		log.Println("Created missing directory:", p.name)
+	} else if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Receive will handle messages and save to path
