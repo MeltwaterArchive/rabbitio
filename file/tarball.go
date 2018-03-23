@@ -21,12 +21,12 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/meltwater/rabbitio/rmq"
 	"github.com/pborman/uuid"
+	"github.com/spf13/afero"
 )
 
 // TarballBuilder build tarballs from the stream of incoming docs
@@ -84,10 +84,13 @@ func (t *TarballBuilder) addFile(tw *tar.Writer, name string, m *rmq.Message) er
 }
 
 // UnPack will decompress and send messages out on channel from file
-func UnPack(wg *sync.WaitGroup, file *os.File, messages chan rmq.Message) (n int, err error) {
+func UnPack(wg *sync.WaitGroup, file afero.File, messages chan rmq.Message) (n int, err error) {
 
 	// wrap fh in a gzip reader
 	gr, err := gzip.NewReader(file)
+	if err != nil {
+		return n, err
+	}
 
 	// adds tar reader in the gzip
 	tr := tar.NewReader(gr)

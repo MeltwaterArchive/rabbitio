@@ -38,18 +38,22 @@ var inCmd = &cobra.Command{
 			return errors.New("please specify a tarball or directory with tarballs using the -f flag")
 		}
 		channel := make(chan rmq.Message, prefetch)
-		var wg sync.WaitGroup
 
 		override := rmq.Override{RoutingKey: routingKey}
-		path := file.NewInput(fileInput)
+		path, err := file.NewInput(fileInput)
+		if err != nil {
+			return err
+		}
+
+		var wg sync.WaitGroup
 		path.Wg = &wg
 		rabbit := rmq.NewPublisher(uri, exchange, queue, tag, prefetch)
 		rabbit.Wg = &wg
+		defer rabbit.Close()
 
 		go rabbit.Publish(channel, override)
-		path.Send(channel)
-		rabbit.Close()
-		return nil
+
+		return path.Send(channel)
 	},
 }
 
