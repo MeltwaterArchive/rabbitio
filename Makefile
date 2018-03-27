@@ -14,7 +14,7 @@ deps:
 
 test:
 	go vet ${DIRECTORIES}
-	GOCACHE=off go test -v -cover ${DIRECTORIES}
+	GOCACHE=off go test -v -race -cover ${DIRECTORIES}
 
 build:
 	go build -o ${NAME} -ldflags "-X main.version=${VERSION}" main.go

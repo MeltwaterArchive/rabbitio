@@ -15,6 +15,10 @@
 package file
 
 import (
+	"archive/tar"
+	"bytes"
+	"compress/gzip"
+	"log"
 	"sync"
 	"testing"
 
@@ -33,12 +37,14 @@ func TestNewInput(t *testing.T) {
 	path, err := NewInput("datadir")
 
 	_, err2 := NewInput("datadir_notthere")
+	_, fileErr := NewInput("datadir/file2.tgz")
 
 	fs = afero.NewReadOnlyFs(fs)
 
 	assert.Nil(err, "should return no error")
 	assert.Len(path.queue, 2, "Should have 2 items")
 	assert.NotNil(err2, "should return error on directory not there")
+	assert.Nil(fileErr, "should handle a single file input")
 }
 
 // TestNewOutput will make sure we create directory when missing.
@@ -80,26 +86,66 @@ func TestPath_Create(t *testing.T) {
 
 }
 
+func tarball() []byte {
+	var buf bytes.Buffer
+	gw := gzip.NewWriter(&buf)
+	tw := tar.NewWriter(gw)
+
+	hdr := &tar.Header{
+		Name: "file.tgz",
+		Mode: 0600,
+		Size: int64(len("mybody")),
+	}
+	if err := tw.WriteHeader(hdr); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := tw.Write([]byte("mybody")); err != nil {
+		log.Fatal(err)
+	}
+	if err := tw.Close(); err != nil {
+		log.Fatal(err)
+	}
+	if err := gw.Close(); err != nil {
+		log.Fatal(err)
+	}
+
+	return buf.Bytes()
+}
+
 func TestPath_Send(t *testing.T) {
 	assert := assert.New(t)
 	fs = afero.NewMemMapFs()
 
 	fs.MkdirAll("/datadir", 0755)
 	fs.MkdirAll("/nofilesdatadir", 0755)
+	fs.MkdirAll("/data", 0755)
 	afero.WriteFile(fs, "/datadir/file1.tgz", []byte("mymessage"), 0644)
 	afero.WriteFile(fs, "/datadir/file2.tgz", []byte("mymessage"), 0644)
+	afero.WriteFile(fs, "/data/tarball.tgz", tarball(), 0644)
+
 	path, _ := NewInput("/datadir/")
+	workingPath, _ := NewInput("/data/tarball.tgz")
 
 	noFilesPath := &Path{queue: []string{"nodir/nofile"}}
 
 	// m := make(chan rmq.Message)
 	path.Wg = new(sync.WaitGroup)
+	workingPath.Wg = new(sync.WaitGroup)
 
-	openErr := noFilesPath.Send(make(chan rmq.Message))
-	invErr := path.Send(make(chan rmq.Message))
+	openErr := noFilesPath.Send(make(chan rmq.Message, 1))
+	invErr := path.Send(make(chan rmq.Message, 1))
+
+	ch := make(chan rmq.Message, 1)
+	go func() {
+		for range ch {
+			workingPath.Wg.Done()
+		}
+	}()
+	noErr := workingPath.Send(ch)
 
 	assert.Error(openErr, "should return error as directory and file is not there")
-	assert.Error(invErr, "should return no error on invalid file type")
+	assert.Error(invErr, "received unexpected error unexpected EOF")
+	assert.NoError(noErr, "should return no error")
 }
 
 func TestWriteFile(t *testing.T) {
