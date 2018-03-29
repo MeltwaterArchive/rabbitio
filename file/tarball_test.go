@@ -15,7 +15,6 @@
 package file
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/meltwater/rabbitio/rmq"
@@ -75,10 +74,9 @@ func TestTarballBuilder_Pack(t *testing.T) {
 	}()
 	ch <- rmq.Message{Body: []byte("mymessage")}
 
-	fmt.Println("verify here")
 	<-verify
-	fmt.Println("closing here")
 	close(ch)
+	close(verify)
 
 	assert.NoError(t, err, "received no error")
 }
@@ -92,8 +90,13 @@ func TestTarballBuilder_Pack_WriteError(t *testing.T) {
 	fs.MkdirAll("/data", 0755)
 	fs = afero.NewReadOnlyFs(fs)
 
-	ch <- rmq.Message{Body: []byte("mymessage")}
+	go func() {
+		ch <- rmq.Message{Body: []byte("mymessage")}
+	}()
+
 	err := tarball.Pack(ch, "/data", verify)
+	close(ch)
+	close(verify)
 
 	assert.Error(t, err, "Received unexpected error operation not permitted")
 }
