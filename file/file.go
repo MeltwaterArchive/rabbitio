@@ -131,11 +131,13 @@ func (p *Path) create() error {
 }
 
 // Receive will handle messages and save to path
-func (p *Path) Receive(messages chan rmq.Message, verify chan rmq.Verify) {
+func (p *Path) Receive(messages chan rmq.Message, verify chan rmq.Verify) error {
 
 	// create new TarballBuilder
-	builder := NewTarballBuilder(p.batchSize)
+	builder, err := NewTarballBuilder(p.batchSize)
+	if err != nil {
+		return err
+	}
 
-	builder.Pack(messages, p.name, verify)
-
+	return builder.Pack(messages, p.name, verify)
 }

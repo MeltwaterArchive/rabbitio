@@ -57,8 +57,7 @@ var outCmd = &cobra.Command{
 			close(channel)
 		}()
 
-		path.Receive(channel, verify)
-		return nil
+		return path.Receive(channel, verify)
 	},
 }
 
