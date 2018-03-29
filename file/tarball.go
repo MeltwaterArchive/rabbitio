@@ -46,10 +46,7 @@ func NewTarballBuilder(tarSize int) (*TarballBuilder, error) {
 		tarSize: tarSize,
 	}
 	err := t.getWriters()
-	if err != nil {
-		return nil, err
-	}
-	return t, nil
+	return t, err
 }
 
 // get a new set of writers to write to
