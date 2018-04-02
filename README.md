@@ -6,9 +6,9 @@ This is a tool to support backup and restoring of RabbitMQ messages
 #### Download binary
 Pick your archtype from [Releases](https://github.com/meltwater/rabbitio/releases) and download, in addition you'll need to set the binary to be executable.
 
-Example with `linux-amd64` and version `v0.5.1`:
+Example with `linux-amd64` and version `v0.5.3`:
 ```
-wget https://github.com/meltwater/rabbitio/releases/download/v0.5.1/rabbitio-v0.5.1-linux-amd64 -O rabbitio
+wget https://github.com/meltwater/rabbitio/releases/download/v0.5.3/rabbitio-v0.5.3-linux-amd64 -O rabbitio
 chmod +755 rabbitio
 ```
 
