@@ -1,4 +1,6 @@
 # Rabbit IO
+[![Build Status](https://travis-ci.org/meltwater/rabbitio.svg?branch=master)](https://travis-ci.org/meltwater/rabbitio)
+
 This is a tool to support backup and restoring of RabbitMQ messages
 
 ## Installing
