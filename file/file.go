@@ -15,14 +15,17 @@
 package file
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"sync"
 
 	"github.com/meltwater/rabbitio/rmq"
+	"github.com/spf13/afero"
 )
+
+// fs is our os.File handler
+var fs = afero.NewOsFs()
 
 // Path is a directory file path
 type Path struct {
@@ -33,19 +36,20 @@ type Path struct {
 }
 
 // NewInput returns a *Path with a queue of files paths, all files in a directory
-func NewInput(path string) *Path {
-	fi, err := os.Stat(path)
+func NewInput(path string) (*Path, error) {
+	fi, err := fs.Stat(path)
 	if err != nil {
-		log.Fatalln(err)
+		// log.Fatalln(err)
+		return nil, err
 	}
 
-	var f *Path
 	q := []string{}
 	switch mode := fi.Mode(); {
 	case mode.IsDir():
-		files, err := ioutil.ReadDir(path)
+		files, err := afero.ReadDir(fs, path)
 		if err != nil {
-			log.Fatalf("Couldn't get directory or file: %s", err)
+			return nil, err
+			//	log.Fatalf("Couldn't get directory or file: %s", err)
 		}
 		log.Printf("Found %d file(s) in %s", len(files), path)
 		for _, f := range files {
@@ -55,16 +59,12 @@ func NewInput(path string) *Path {
 		q = append(q, path)
 	}
 
-	f = &Path{
-		queue: q,
-	}
-
-	return f
+	return &Path{queue: q}, nil
 }
 
 func writeFile(b []byte, dir, file string) error {
 	filePath := filepath.Join(dir, file)
-	err := ioutil.WriteFile(filePath, b, 0644)
+	err := afero.WriteFile(fs, filePath, b, 0644)
 	if err != nil {
 		return err
 	}
@@ -73,22 +73,24 @@ func writeFile(b []byte, dir, file string) error {
 }
 
 // Send delivers messages to the channel
-func (p *Path) Send(messages chan rmq.Message) {
+func (p *Path) Send(messages chan rmq.Message) error {
 	var num int
 
 	// loop over the queued up files
 	for _, file := range p.queue {
 		// open file from the queue
-		fh, err := os.Open(file)
+		fh, err := fs.Open(file)
 		if err != nil {
-			log.Fatalf("failed to open file: %s", err)
+			return err
+			// log.Fatalf("failed to open file: %s", err)
 		}
 		// and clean up afterwards
 		defer fh.Close()
 
 		tarNum, err := UnPack(p.Wg, fh, messages)
 		if err != nil {
-			log.Fatalf("Failed to unpack: %s ", err)
+			return err
+			//log.Fatalf("Failed to unpack: %s ", err)
 		}
 		log.Printf("Extracted %d Messages from tarball: %s", tarNum, file)
 		num = num + tarNum
@@ -98,30 +100,44 @@ func (p *Path) Send(messages chan rmq.Message) {
 	close(messages)
 	// when all files are read, close
 	log.Printf("Total %d Messages from tarballs", num)
-
+	return nil
 }
 
 // NewOutput creates a Path to output files in from RabbitMQ
-func NewOutput(path string, batchSize int) *Path {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		log.Println("Creating missing directory:", path)
-		err := os.MkdirAll(path, os.ModePerm)
-		if err != nil {
-			log.Fatalln(err)
-		}
-	}
-	return &Path{
+func NewOutput(path string, batchSize int) (*Path, error) {
+
+	p := &Path{
 		name:      path,
 		batchSize: batchSize,
 	}
+
+	if err := p.create(); err != nil {
+		return p, err
+	}
+
+	return p, nil
+}
+
+// Create creates the target directory if missing
+func (p *Path) create() error {
+	if _, err := fs.Stat(p.name); os.IsNotExist(err) {
+		err := fs.MkdirAll(p.name, os.ModePerm)
+		if err != nil {
+			return err
+		}
+		log.Println("Created missing directory:", p.name)
+	}
+	return nil
 }
 
 // Receive will handle messages and save to path
-func (p *Path) Receive(messages chan rmq.Message, verify chan rmq.Verify) {
+func (p *Path) Receive(messages chan rmq.Message, verify chan rmq.Verify) error {
 
 	// create new TarballBuilder
-	builder := NewTarballBuilder(p.batchSize)
+	builder, err := NewTarballBuilder(p.batchSize)
+	if err != nil {
+		return err
+	}
 
-	builder.Pack(messages, p.name, verify)
-
+	return builder.Pack(messages, p.name, verify)
 }

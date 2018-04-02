@@ -21,12 +21,12 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/meltwater/rabbitio/rmq"
 	"github.com/pborman/uuid"
+	"github.com/spf13/afero"
 )
 
 // TarballBuilder build tarballs from the stream of incoming docs
@@ -41,15 +41,12 @@ type TarballBuilder struct {
 }
 
 // NewTarballBuilder created a TarballBuilder
-func NewTarballBuilder(tarSize int) *TarballBuilder {
+func NewTarballBuilder(tarSize int) (*TarballBuilder, error) {
 	t := &TarballBuilder{
 		tarSize: tarSize,
 	}
 	err := t.getWriters()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return t
+	return t, err
 }
 
 // get a new set of writers to write to
@@ -84,10 +81,13 @@ func (t *TarballBuilder) addFile(tw *tar.Writer, name string, m *rmq.Message) er
 }
 
 // UnPack will decompress and send messages out on channel from file
-func UnPack(wg *sync.WaitGroup, file *os.File, messages chan rmq.Message) (n int, err error) {
+func UnPack(wg *sync.WaitGroup, file afero.File, messages chan rmq.Message) (n int, err error) {
 
 	// wrap fh in a gzip reader
 	gr, err := gzip.NewReader(file)
+	if err != nil {
+		return n, err
+	}
 
 	// adds tar reader in the gzip
 	tr := tar.NewReader(gr)
@@ -121,7 +121,7 @@ func UnPack(wg *sync.WaitGroup, file *os.File, messages chan rmq.Message) (n int
 }
 
 // Pack messages from the channel into the directory
-func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string, verify chan rmq.Verify) {
+func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string, verify chan rmq.Verify) error {
 
 	t.wg.Add(1)
 
@@ -143,19 +143,19 @@ func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string, verify chan
 			// writes to tarball here when reached the t.tarSize
 			err := writeFile(t.buf.Bytes(), dir, fmt.Sprintf("%d_messages_%d.tgz", fileNum, docNum))
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			verify <- rmq.Verify{MultiAck: true, Tag: doc.DeliveryTag}
 
 			err = t.getWriters()
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			docNum = 0
 		}
 
 		if err := t.addFile(t.tar, uuid.New(), &doc); err != nil {
-			log.Fatalln(err)
+			return err
 		}
 	}
 	t.tar.Flush()
@@ -167,8 +167,7 @@ func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string, verify chan
 	// writes to tarball here when not reached the t.tarSize
 	err := writeFile(t.buf.Bytes(), dir, fmt.Sprintf("%d_messages_%d.tgz", fileNum, docNum))
 	if err != nil {
-		log.Fatal(err)
-
+		return err
 	}
 
 	// Does not ack the messages unless it is repeated, not sure why yet..
@@ -179,6 +178,7 @@ func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string, verify chan
 	t.wg.Done()
 	close(verify)
 	log.Print("tarball writer closing")
+	return nil
 }
 
 // CloseWaiter waits for the wg and then closes

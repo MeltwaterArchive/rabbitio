@@ -37,12 +37,15 @@ var outCmd = &cobra.Command{
 	Long: `Select your output directory and batchsize of the tarballs.
 	When there are no more messages in the queue, press CTRL + c, to interrupt
 	the consumption and save the last message buffers.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		channel := make(chan rmq.Message, prefetch*2)
 		verify := make(chan rmq.Verify)
 
 		rabbit := rmq.NewConsumer(uri, exchange, queue, routingKey, tag, prefetch)
-		path := file.NewOutput(outputDirectory, batchSize)
+		path, err := file.NewOutput(outputDirectory, batchSize)
+		if err != nil {
+			return err
+		}
 
 		go rabbit.Consume(channel, verify)
 
@@ -54,7 +57,7 @@ var outCmd = &cobra.Command{
 			close(channel)
 		}()
 
-		path.Receive(channel, verify)
+		return path.Receive(channel, verify)
 	},
 }
 
