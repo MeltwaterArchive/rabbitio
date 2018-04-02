@@ -18,3 +18,4 @@ deploy:
       - master
   on:
     tags: true
+    repo: meltwater/rabbitio
