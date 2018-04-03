@@ -111,4 +111,3 @@ Also feel free to drop a line to the maintainers:
 
 - Joel ([@vorce](https://github.com/vorce))
 - Stian ([@stiangrindvoll](https://github.com/stiangrindvoll))
-- Team Blacksmiths ([all.blacksmiths@meltwater.com](mailto:all.blacksmiths@meltwater.com))
