@@ -1,3 +1,5 @@
+<p align="center"><img src="https://user-images.githubusercontent.com/3073246/38677615-11f18176-3e5f-11e8-935f-b1b824e53e92.png" width="300"></p>
+
 # Rabbit IO
 [![Build Status](https://travis-ci.org/meltwater/rabbitio.svg?branch=master)](https://travis-ci.org/meltwater/rabbitio)
 
