@@ -11,13 +11,15 @@ This is a tool to support backup and restoring of RabbitMQ messages
 Pick your archtype from [Releases](https://github.com/meltwater/rabbitio/releases) and download, in addition you'll need to set the binary to be executable.
 
 Example with `linux-amd64` and version `v0.5.3`:
-```
+
+```bash
 wget https://github.com/meltwater/rabbitio/releases/download/v0.5.3/rabbitio-v0.5.3-linux-amd64 -O rabbitio
 chmod +755 rabbitio
 ```
 
 #### Using `go get`
-```
+
+```bash
 go get -u github.com/meltwater/rabbitio
 ```
 
@@ -26,22 +28,28 @@ go get -u github.com/meltwater/rabbitio
 After installing rabbitio, you can quickly test out `rabbitio` by using [docker-compose](https://docs.docker.com/compose/install/)
 
 Included is a docker-compose file to set up local rabbitmq.
-```
+
+```bash
 cd $GOPATH/src/github.com/meltwater
 docker-compose up -d
 ```
+
 Go to your now running [local rabbit](http://localhost:15672) and create example exchange: `rabbitio-exchange` and queue `rabbitio-queue`,
 then bind the queue to the exchange.
 
 #### Publish your first message
+
+```bash
+echo "My first message" > message # write a message into a file
+tar cfz message.tgz message # create a tarball containing this message
+rabbitio in -e rabbitio-exchange -q rabbitio-queue -f message.tgz
 ```
-echo "My first message" > message && tar cfz message.tgz message # creates message.tgz
-rabbitio in -e rabbitio -q rabbitio -f message.tgz
-```
+
 This will publish your first message into `rabbitio-exchange` and you'll see your message in the queue `rabbitio-queue`
 
 #### Consume your first message
-```
+
+```bash
 $ mkdir data
 $ rabbitio out -e rabbitio-exchange -q rabbitio-queue -d data/
 2018/03/15 15:37:35 RabbitMQ connected: amqp://guest:guest@localhost:5672/
@@ -77,8 +85,8 @@ Flags:
   -u, --uri string          AMQP URI, uri to for instance RabbitMQ (default "amqp://guest:guest@localhost:5672/")
 
 Use "rabbitio [command] --help" for more information about a command.
-
 ```
+
 ### AMQP Headers and Routing Key
 
 Currently RabbitIO supports AMQP Headers of the types:
@@ -93,21 +101,22 @@ When you read messages from a queue, the headers as well as the routing key will
 If you plan to work on `rabbitio` you will need [Golang](https://golang.org/dl/). PRs are welcome as well as implementation discussions.
 
 **Clone `rabbitio`**
-```
+```bash
 mkdir -p $GOPATH/src/github.com/meltwater
 cd $GOPATH/src/github.com/meltwater
 git clone git@github.com:meltwater/rabbitio.git
 ```
 
 #### Building
-```
+
+```bash
 cd rabbitio
 make && make build
 ```
 
 ## Maintainers
 
-For any bug reports or change requests, please create a Github issue or submit a PR.
+For any bug reports or change requests, please create a GitHub issue or submit a PR.
 
 Also feel free to drop a line to the maintainers:
 
