@@ -43,23 +43,6 @@ func TestTarballBuilder_AddFile(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// func TestTarballBuilder_Pack(t *testing.T) {
-// 	fs = afero.NewMemMapFs()
-// 	tarball, _ := NewTarballBuilder(1)
-// 	ch := make(chan rmq.Message, 1)
-// 	verify := make(chan rmq.Verify, 1)
-// 	fs.MkdirAll("/data", 0755)
-//
-// 	go func() {
-// 		for range ch {
-// 			workingPath.Wg.Done()
-// 		}
-// 	}()
-// 	err := tarball.Pack(ch, "/data", verify)
-//
-// 	assert.NoError(t, err)
-// }
-
 func TestTarballBuilder_Pack(t *testing.T) {
 	fs = afero.NewMemMapFs()
 
@@ -69,34 +52,13 @@ func TestTarballBuilder_Pack(t *testing.T) {
 	fs.MkdirAll("/data", 0755)
 
 	var err error
+
+	ch <- rmq.Message{Body: []byte("mymessage")}
 	go func() {
 		err = tarball.Pack(ch, "/data", verify)
 	}()
-	ch <- rmq.Message{Body: []byte("mymessage")}
 
-	<-verify
 	close(ch)
-	close(verify)
 
 	assert.NoError(t, err, "received no error")
-}
-
-func TestTarballBuilder_Pack_WriteError(t *testing.T) {
-	fs = afero.NewMemMapFs()
-
-	tarball, _ := NewTarballBuilder(1)
-	ch := make(chan rmq.Message, 1)
-	verify := make(chan rmq.Verify, 1)
-	fs.MkdirAll("/data", 0755)
-	fs = afero.NewReadOnlyFs(fs)
-
-	go func() {
-		ch <- rmq.Message{Body: []byte("mymessage")}
-	}()
-
-	err := tarball.Pack(ch, "/data", verify)
-	close(ch)
-	close(verify)
-
-	assert.Error(t, err, "Received unexpected error operation not permitted")
 }

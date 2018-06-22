@@ -8,7 +8,7 @@ This is a tool to support backup and restoring of RabbitMQ messages
 ## Installing
 
 #### Download binary
-Pick your archtype from [Releases](https://github.com/meltwater/rabbitio/releases) and download, in addition you'll need to set the binary to be executable.
+Pick your binary from [Releases](https://github.com/meltwater/rabbitio/releases) and download, in addition you'll need to set the binary to be executable.
 
 Example with `linux-amd64` and version `v0.5.3`:
 
@@ -94,7 +94,7 @@ Currently RabbitIO supports AMQP Headers of the types:
 * number
 * boolean
 
-When you read messages from a queue, the headers as well as the routing key will be saved as metadata in the tarballs, utilizing what in tar is called XAttrs. This is helpful if you one day want to replay the data back into the original queue, while keeping the attributes that belong to the message. This currently only works on messages in the tarballs that has been written by RabbitIO.
+When you read messages from a queue, the headers as well as the routing key will be saved as metadata in the tarballs, utilizing what in tar is called PAX Records. This is helpful if you one day want to replay the data back into the original queue, while keeping the attributes that belong to the message. This currently only works on messages in the tarballs that has been written by RabbitIO.
 
 ## Contributing
 
