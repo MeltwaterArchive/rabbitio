@@ -22,15 +22,15 @@ import (
 )
 
 var (
-	myStringHeader  = "amqp.Headers.string.myStringHeader"
-	myInt32Header   = "amqp.Headers.int.myInt32Header"
-	myInt64Header   = "amqp.Headers.int.myInt64Header"
-	myFloat32Header = "amqp.Headers.float.myFloat32Header"
-	myFloat64Header = "amqp.Headers.float.myFloat64Header"
-	myBoolHeader    = "amqp.Headers.bool.myBoolHeader"
+	myStringHeader  = "RABBITIO.amqp.Headers.string.myStringHeader"
+	myInt32Header   = "RABBITIO.amqp.Headers.int.myInt32Header"
+	myInt64Header   = "RABBITIO.amqp.Headers.int.myInt64Header"
+	myFloat32Header = "RABBITIO.amqp.Headers.float.myFloat32Header"
+	myFloat64Header = "RABBITIO.amqp.Headers.float.myFloat64Header"
+	myBoolHeader    = "RABBITIO.amqp.Headers.bool.myBoolHeader"
 )
 
-func TestToXAttrs(t *testing.T) {
+func TestToPAXRecords(t *testing.T) {
 	messageHeaders := make(amqp.Table)
 	messageHeaders["myStringHeader"] = "myString"
 	messageHeaders["myInt32Header"] = int32(32)
@@ -48,21 +48,21 @@ func TestToXAttrs(t *testing.T) {
 	attrHeaders[myFloat64Header] = "64.64"
 	attrHeaders[myBoolHeader] = "true"
 
-	attrs := message.ToXAttrs()
+	pax := message.ToPAXRecords()
 
 	assert.NoError(t, messageHeaders.Validate(), "should be valid Headers")
 
-	assert.Equal(t, attrHeaders[myStringHeader], attrs[myStringHeader])
-	assert.Equal(t, attrHeaders[myInt32Header], attrs[myInt32Header])
-	assert.Equal(t, attrHeaders[myInt64Header], attrs[myInt64Header])
-	assert.Equal(t, attrHeaders[myFloat32Header], attrs[myFloat32Header])
-	assert.Equal(t, attrHeaders[myFloat64Header], attrs[myFloat64Header])
-	assert.Equal(t, attrHeaders[myBoolHeader], attrs[myBoolHeader])
+	assert.Equal(t, attrHeaders[myStringHeader], pax[myStringHeader])
+	assert.Equal(t, attrHeaders[myInt32Header], pax[myInt32Header])
+	assert.Equal(t, attrHeaders[myInt64Header], pax[myInt64Header])
+	assert.Equal(t, attrHeaders[myFloat32Header], pax[myFloat32Header])
+	assert.Equal(t, attrHeaders[myFloat64Header], pax[myFloat64Header])
+	assert.Equal(t, attrHeaders[myBoolHeader], pax[myBoolHeader])
 }
 
 func TestNewMessage(t *testing.T) {
 	var headers = make(map[string]string)
-	headers["amqp.routingKey"] = "routingKey from tarball XAttrs"
+	headers["RABBITIO.amqp.routingKey"] = "routingKey from tarball PAXRecords"
 	headers[myStringHeader] = "myString"
 	headers[myInt32Header] = "3232"
 	headers[myInt64Header] = "6464"
@@ -72,7 +72,7 @@ func TestNewMessage(t *testing.T) {
 
 	m := NewMessage([]byte("Message"), headers)
 
-	assert.Equal(t, "routingKey from tarball XAttrs", m.RoutingKey)
+	assert.Equal(t, "routingKey from tarball PAXRecords", m.RoutingKey)
 	assert.Equal(t, []byte("Message"), m.Body)
 	assert.NoError(t, m.Headers.Validate())
 }
