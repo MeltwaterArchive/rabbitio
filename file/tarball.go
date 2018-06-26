@@ -70,7 +70,7 @@ func (t *TarballBuilder) addFile(tw *tar.Writer, name string, m *rmq.Message) er
 	header.ModTime = time.Now()
 	header.Format = tar.FormatPAX
 	header.PAXRecords = m.ToPAXRecords()
-	header.PAXRecords["RABBITIO.amqp.routingKey"] = m.RoutingKey
+	header.PAXRecords["RABBITIO.amqp.routingkey"] = m.RoutingKey
 
 	if err := tw.WriteHeader(header); err != nil {
 		return err
