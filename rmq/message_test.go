@@ -22,17 +22,19 @@ import (
 )
 
 var (
-	myStringHeader  = "RABBITIO.amqp.Headers.string.myStringHeader"
-	myInt32Header   = "RABBITIO.amqp.Headers.int.myInt32Header"
-	myInt64Header   = "RABBITIO.amqp.Headers.int.myInt64Header"
-	myFloat32Header = "RABBITIO.amqp.Headers.float.myFloat32Header"
-	myFloat64Header = "RABBITIO.amqp.Headers.float.myFloat64Header"
-	myBoolHeader    = "RABBITIO.amqp.Headers.bool.myBoolHeader"
+	myStringHeader   = "RABBITIO.amqp.headers.string.myStringHeader"
+	myStringEqHeader = "RABBITIO.amqp.headers.string.myStringEqHeader"
+	myInt32Header    = "RABBITIO.amqp.headers.int.myInt32Header"
+	myInt64Header    = "RABBITIO.amqp.headers.int.myInt64Header"
+	myFloat32Header  = "RABBITIO.amqp.headers.float.myFloat32Header"
+	myFloat64Header  = "RABBITIO.amqp.headers.float.myFloat64Header"
+	myBoolHeader     = "RABBITIO.amqp.headers.bool.myBoolHeader"
 )
 
 func TestToPAXRecords(t *testing.T) {
 	messageHeaders := make(amqp.Table)
 	messageHeaders["myStringHeader"] = "myString"
+	messageHeaders["myStringEqHeader"] = "my=String"
 	messageHeaders["myInt32Header"] = int32(32)
 	messageHeaders["myInt64Header"] = int64(64)
 	messageHeaders["myFloat32Header"] = float32(32.32)
@@ -42,6 +44,7 @@ func TestToPAXRecords(t *testing.T) {
 
 	var attrHeaders = make(map[string]string)
 	attrHeaders[myStringHeader] = "myString"
+	attrHeaders[myStringEqHeader] = "my=String"
 	attrHeaders[myInt32Header] = "32"
 	attrHeaders[myInt64Header] = "64"
 	attrHeaders[myFloat32Header] = "32.32"
@@ -53,6 +56,7 @@ func TestToPAXRecords(t *testing.T) {
 	assert.NoError(t, messageHeaders.Validate(), "should be valid Headers")
 
 	assert.Equal(t, attrHeaders[myStringHeader], pax[myStringHeader])
+	assert.Equal(t, attrHeaders[myStringEqHeader], pax[myStringEqHeader])
 	assert.Equal(t, attrHeaders[myInt32Header], pax[myInt32Header])
 	assert.Equal(t, attrHeaders[myInt64Header], pax[myInt64Header])
 	assert.Equal(t, attrHeaders[myFloat32Header], pax[myFloat32Header])
@@ -62,8 +66,9 @@ func TestToPAXRecords(t *testing.T) {
 
 func TestNewMessage(t *testing.T) {
 	var headers = make(map[string]string)
-	headers["RABBITIO.amqp.routingKey"] = "routingKey from tarball PAXRecords"
+	headers["RABBITIO.amqp.routingkey"] = "routingKey from tarball PAXRecords"
 	headers[myStringHeader] = "myString"
+	headers[myStringEqHeader] = "my=String"
 	headers[myInt32Header] = "3232"
 	headers[myInt64Header] = "6464"
 	headers[myFloat32Header] = "32.123"

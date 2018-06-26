@@ -53,7 +53,7 @@ func (m *Message) ToPAXRecords() map[string]string {
 		case string:
 			headerType = "string"
 		}
-		pax[fmt.Sprintf("RABBITIO.amqp.Headers.%s.%s", headerType, k)] = fmt.Sprintf("%v", v)
+		pax[fmt.Sprintf("RABBITIO.amqp.headers.%s.%s", headerType, k)] = fmt.Sprintf("%v", v)
 	}
 	return pax
 }
@@ -69,11 +69,11 @@ func NewMessage(bytes []byte, xattr map[string]string) *Message {
 	for k, v := range xattr {
 
 		switch {
-		case k == "RABBITIO.amqp.routingKey":
+		case k == "RABBITIO.amqp.routingkey":
 			routingKey = v
-		case strings.HasPrefix(k, "RABBITIO.amqp.Headers."):
+		case strings.HasPrefix(k, "RABBITIO.amqp.headers."):
 			// th is now [type, header]
-			th := strings.SplitN(strings.TrimPrefix(k, "RABBITIO.amqp.Headers."), ".", 2)
+			th := strings.SplitN(strings.TrimPrefix(k, "RABBITIO.amqp.headers."), ".", 2)
 			headerType := th[0]
 			header := strings.Join(th[1:], ".")
 
