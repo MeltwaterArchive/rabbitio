@@ -155,7 +155,7 @@ func (t *TarballBuilder) Pack(messages chan rmq.Message, dir string, verify chan
 			docNum = 0
 		}
 
-		if err := t.addFile(t.tar, uuid.New(), &doc); err != nil {
+		if err := t.addFile(t.tar, uuid.New()+".rio", &doc); err != nil {
 			return err
 		}
 	}
