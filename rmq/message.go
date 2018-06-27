@@ -65,7 +65,6 @@ func NewMessage(bytes []byte, xattr map[string]string) *Message {
 	var headers = make(amqp.Table)
 	var routingKey string
 
-	// need to support more than just string here for v
 	for k, v := range xattr {
 
 		switch {

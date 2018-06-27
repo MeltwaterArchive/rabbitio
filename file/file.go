@@ -73,7 +73,7 @@ func writeFile(b []byte, dir, file string) error {
 }
 
 // Send delivers messages to the channel
-func (p *Path) Send(messages chan rmq.Message) error {
+func (p *Path) Send(messages chan rmq.Message, match string) error {
 	var num int
 
 	// loop over the queued up files
@@ -87,7 +87,7 @@ func (p *Path) Send(messages chan rmq.Message) error {
 		// and clean up afterwards
 		defer fh.Close()
 
-		tarNum, err := UnPack(p.Wg, fh, messages)
+		tarNum, err := UnPack(p.Wg, fh, messages, match)
 		if err != nil {
 			return err
 			//log.Fatalf("Failed to unpack: %s ", err)

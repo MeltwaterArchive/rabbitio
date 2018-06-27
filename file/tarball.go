@@ -81,8 +81,13 @@ func (t *TarballBuilder) addFile(tw *tar.Writer, name string, m *rmq.Message) er
 	return nil
 }
 
+func matchTarHeader(match []string, hdr *tar.Header) bool {
+
+	return true
+}
+
 // UnPack will decompress and send messages out on channel from file
-func UnPack(wg *sync.WaitGroup, file afero.File, messages chan rmq.Message) (n int, err error) {
+func UnPack(wg *sync.WaitGroup, file afero.File, messages chan rmq.Message, match string) (n int, err error) {
 
 	// wrap fh in a gzip reader
 	gr, err := gzip.NewReader(file)
@@ -103,6 +108,12 @@ func UnPack(wg *sync.WaitGroup, file afero.File, messages chan rmq.Message) (n i
 		if terr != nil {
 			return n, terr
 		}
+
+		if matchTarHeader(match, hdr) != true {
+			// jumps to next message in tarball
+			continue
+		}
+
 		wg.Add(1)
 
 		// create a Buffer to work on
@@ -115,7 +126,7 @@ func UnPack(wg *sync.WaitGroup, file afero.File, messages chan rmq.Message) (n i
 		}
 
 		// generate and push the message to the output channel
-		messages <- *rmq.NewMessage(buf.Bytes(), hdr.PAXRecords)
+		messages <- *rmq.NewMessage(buf.Bytes(), hdr.Xattrs)
 		n++
 	}
 	return n, err

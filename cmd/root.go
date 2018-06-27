@@ -24,6 +24,7 @@ import (
 var (
 	version                               string
 	uri, exchange, queue, tag, routingKey string
+	match                                 []string
 	prefetch                              int
 )
 
@@ -52,5 +53,6 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&queue, "queue", "q", "", "Queue to connect to")
 	RootCmd.PersistentFlags().StringVarP(&routingKey, "routingkey", "r", "#", "Routing Key, if specified will override tarball routing key configuration")
 	RootCmd.PersistentFlags().StringVarP(&tag, "tag", "t", "Rabbit IO Connector "+version, "AMQP Client Tag")
+	RootCmd.PersistentFlags().StringSliceVarP(&match, "match", "m", "", "Match messages containing this data")
 	RootCmd.PersistentFlags().IntVarP(&prefetch, "prefetch", "p", 100, "Prefetch for batches")
 }

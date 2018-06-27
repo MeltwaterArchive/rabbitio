@@ -53,7 +53,7 @@ var inCmd = &cobra.Command{
 
 		go rabbit.Publish(channel, override)
 
-		return path.Send(channel)
+		return path.Send(channel, match)
 	},
 }
 

@@ -15,6 +15,7 @@
 package file
 
 import (
+	"archive/tar"
 	"testing"
 
 	"github.com/meltwater/rabbitio/rmq"
@@ -61,4 +62,12 @@ func TestTarballBuilder_Pack(t *testing.T) {
 	close(ch)
 
 	assert.NoError(t, err, "received no error")
+}
+
+func TestMatchTarballHeader(t *testing.T) {
+	header := new(tar.Header)
+	header.Xattrs = m.ToPAXRecords()
+	header.Xattrs["RABBITIO.amqp.headers.string.myStringHeaderKey"] = "myStringHeaderValue"
+
+	assert.False(t, matchTarHeader(["myStringHeaderKey:myStringHeaderValue"], header))
 }
