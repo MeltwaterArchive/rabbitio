@@ -115,7 +115,7 @@ func UnPack(wg *sync.WaitGroup, file afero.File, messages chan rmq.Message) (n i
 		}
 
 		// generate and push the message to the output channel
-		messages <- *rmq.NewMessage(buf.Bytes(), hdr.PAXRecords)
+		messages <- *rmq.NewMessage(buf.Bytes(), hdr.Xattrs)
 		n++
 	}
 	return n, err
