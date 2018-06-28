@@ -89,12 +89,23 @@ Use "rabbitio [command] --help" for more information about a command.
 
 ### AMQP Headers and Routing Key
 
-Currently RabbitIO supports AMQP Headers of the types:
-* string
-* number
-* boolean
+When you read messages from a queue, the headers as well as the routing key will be saved as metadata in the tarballs,
+utilizing what in tar is called PAX Records. This is helpful if you one day want to replay the data back into the original queue, while keeping the attributes that belong to the message.
 
-When you read messages from a queue, the headers as well as the routing key will be saved as metadata in the tarballs, utilizing what in tar is called PAX Records. This is helpful if you one day want to replay the data back into the original queue, while keeping the attributes that belong to the message. This currently only works on messages in the tarballs that has been written by RabbitIO.
+
+|    Header Format   |                AMQP Headers               |   Tar PAX Records  |
+|:------------------:|:-----------------------------------------:|:------------------:|
+| Format Translation | map[String] Bool, Integer, String, Float  | map[String] String |
+| Body Type          | Bytes                                     | Bytes              |
+
+The tar metadata can be accessed using [pax](https://linux.die.net/man/1/pax)
+```bash
+pax -r -zf 1_message_100.tgz
+```
+
+This will output the messages and in addition a `PaxHeaders.0` directory containing identical filenames as the messages, enabling access of the metadata.
+right now there is no way to selectively publish only certain messages containing a header value, this is a planned feature.
+
 
 ## Contributing
 
