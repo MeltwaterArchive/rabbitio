@@ -3,7 +3,9 @@
 # RabbitIO
 [![Build Status](https://travis-ci.org/meltwater/rabbitio.svg?branch=master)](https://travis-ci.org/meltwater/rabbitio)
 
-This is a tool to support backup and restoring of RabbitMQ messages
+RabbitIO is a tool to backup and restore RabbitMQ messages. 
+
+To learn more about common problems with queue management and our reasoning and design principles when building RabbitIO, please read this [blog post](https://underthehood.meltwater.com/blog/2018/08/03/rabbitio-a-tool-to-backup-and-restore-messages-from-rabbitmq/).
 
 ## Installing
 
