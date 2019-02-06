@@ -7,6 +7,10 @@ RabbitIO is a tool to backup and restore RabbitMQ messages.
 
 To learn more about common problems with queue management and our reasoning and design principles when building RabbitIO, please read this [blog post](https://underthehood.meltwater.com/blog/2018/08/03/rabbitio-a-tool-to-backup-and-restore-messages-from-rabbitmq/).
 
+### Typical use case
+
+A typical use case is to consume all messages from a RabbitMQ deadletter queue to your local dev machine, do some analysis of the messages, and possibly push (some of) them back to an exchange for reprocessing.
+
 ## Installing
 
 #### Download binary
