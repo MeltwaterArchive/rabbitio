@@ -13,11 +13,11 @@ To learn more about common problems with queue management and our reasoning and 
 
 Pick your binary from [Releases](https://github.com/meltwater/rabbitio/releases) and download, in addition you'll need to set the binary to be executable.
 
-Example with `linux-amd64` and version `v0.5.3`:
+Example with `linux-amd64` and version `v0.5.4`:
 
 ```bash
-wget https://github.com/meltwater/rabbitio/releases/download/v0.5.3/rabbitio-v0.5.3-linux-amd64 -O rabbitio
-chmod +755 rabbitio
+wget https://github.com/meltwater/rabbitio/releases/download/v0.5.4/rabbitio-v0.5.4-linux-amd64 -O rabbitio
+chmod 755 rabbitio
 ```
 
 #### Using `go get`
