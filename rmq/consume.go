@@ -90,7 +90,7 @@ func (r *RabbitMQ) Consume(out chan Message, verify <-chan Verify) {
 	deliveries, err := r.channel.Consume(
 		r.queue, // name
 		r.tag,   // consumerTag,
-		false,   // noAck
+		true,   // auto-ack
 		false,   // exclusive
 		false,   // noLocal
 		false,   // noWait
