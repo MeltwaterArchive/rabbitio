@@ -22,9 +22,9 @@ import (
 )
 
 var (
-	version                               string
-	uri, exchange, queue, tag, routingKey string
-	prefetch                              int
+	version                                                            string
+	uri, exchange, queue, tag, routingKey, s3Bucket, awsKey, awsSecret string
+	prefetch                                                           int
 )
 
 // RootCmd represents the base command when called without any subcommands
@@ -52,5 +52,8 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&queue, "queue", "q", "", "Queue to connect to")
 	RootCmd.PersistentFlags().StringVarP(&routingKey, "routingkey", "r", "#", "Routing Key, if specified will override tarball routing key configuration")
 	RootCmd.PersistentFlags().StringVarP(&tag, "tag", "t", "Rabbit IO Connector "+version, "AMQP Client Tag")
+	RootCmd.PersistentFlags().StringVarP(&s3Bucket, "s3Bucket", "s", "", "S3 bucket to uplaod files to")
+	RootCmd.PersistentFlags().StringVarP(&awsKey, "awsKey", "k", "", "AWS Key Credential")
+	RootCmd.PersistentFlags().StringVarP(&awsSecret, "awsSecret", "w", "", "AWS Secret Credential")
 	RootCmd.PersistentFlags().IntVarP(&prefetch, "prefetch", "p", 100, "Prefetch for batches")
 }

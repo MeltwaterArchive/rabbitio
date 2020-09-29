@@ -90,6 +90,9 @@ Flags:
   -r, --routingkey string   Routing Key, if specified will override tarball routing key configuration (default "#")
   -t, --tag string          AMQP Client Tag (default "Rabbit IO Connector ")
   -u, --uri string          AMQP URI, uri to for instance RabbitMQ (default "amqp://guest:guest@localhost:5672/")
+  -s, --s3Bucket string     S3 bucket to uplaod files to
+  -k, --awsKey string       AWS Key Credential
+  -w, --awsSecret string    AWS Secret Credential
 
 Use "rabbitio [command] --help" for more information about a command.
 ```

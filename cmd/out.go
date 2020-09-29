@@ -20,6 +20,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/meltwater/rabbitio/awshelper"
 	"github.com/meltwater/rabbitio/file"
 	"github.com/meltwater/rabbitio/rmq"
 	"github.com/spf13/cobra"
@@ -46,6 +47,8 @@ var outCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+
+		awshelper.NewAWSHelper(awsKey, awsSecret, s3Bucket)
 
 		go rabbit.Consume(channel, verify)
 
