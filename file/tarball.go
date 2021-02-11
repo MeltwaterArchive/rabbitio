@@ -54,7 +54,7 @@ func (t *TarballBuilder) getWriters() (err error) {
 	t.lock.Lock()
 
 	t.buf = new(bytes.Buffer)
-	t.gzip, err = gzip.NewWriterLevel(t.buf, gzip.BestCompression)
+	t.gzip, err = gzip.NewWriterLevel(t.buf, gzip.DefaultCompression)
 	t.tar = tar.NewWriter(t.gzip)
 
 	t.lock.Unlock()
