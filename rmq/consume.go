@@ -16,6 +16,7 @@ package rmq
 
 import (
 	"log"
+	"time"
 
 	"github.com/streadway/amqp"
 )
@@ -69,6 +70,7 @@ func NewConsumer(amqpURI, exchange, queue, routingKey, tag string, prefetch int)
 		exchange:        exchange,
 		contentType:     "application/json",
 		contentEncoding: "UTF-8",
+		tag:             tag,
 	}
 	log.Print("RabbitMQ connected: ", amqpURI)
 	log.Printf("Bind to Exchange: %q and Queue: %q, Messaging waiting: %d", exchange, queue, q.Messages)
@@ -78,7 +80,25 @@ func NewConsumer(amqpURI, exchange, queue, routingKey, tag string, prefetch int)
 
 func (r *RabbitMQ) ackMultiple(deliveryTag <-chan Verify) {
 	for v := range deliveryTag {
-		r.channel.Ack(v.Tag, v.MultiAck)
+		err := r.channel.Ack(v.Tag, v.MultiAck)
+		if err != nil {
+			log.Fatalf("rabbit channel ack failed %s", err)
+		}
+	}
+}
+
+func (r *RabbitMQ) SafeStop() {
+	err := r.channel.Cancel(
+		r.tag, // name
+		false, // noWait
+	)
+	if err != nil {
+		log.Fatalf("rabbit channel cancel failed %s", err)
+	} else {
+		for _ = range time.Tick(2 * time.Second) {
+			log.Print("Rabbit Channel canceled")
+			break
+		}
 	}
 }
 
@@ -89,12 +109,12 @@ func (r *RabbitMQ) Consume(out chan Message, verify <-chan Verify) {
 	// set up a channel consumer
 	deliveries, err := r.channel.Consume(
 		r.queue, // name
-		r.tag,   // consumerTag,
+		r.tag,   // consumer
 		false,   // noAck
 		false,   // exclusive
 		false,   // noLocal
 		false,   // noWait
-		nil,     // arguments
+		nil,     // args
 	)
 	if err != nil {
 		log.Fatalf("rabbit consumer failed %s", err)

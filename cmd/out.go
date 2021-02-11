@@ -53,7 +53,8 @@ var outCmd = &cobra.Command{
 		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 		go func() {
 			<-c
-			fmt.Println(" Interruption, saving last memory bits..")
+			fmt.Println("Interruption, saving last memory bits..")
+			rabbit.SafeStop()
 			close(channel)
 		}()
 
